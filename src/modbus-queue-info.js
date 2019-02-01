@@ -1,5 +1,5 @@
 /**
- Copyright (c) 2016,2017,2018 Klaus Landsdorf (http://bianco-royal.de/)
+ Copyright (c) 2016,2017, Klaus Landsdorf (http://bianco-royal.de/)
  All rights reserved.
  node-red-contrib-modbus - The BSD 3-Clause License
 
@@ -13,30 +13,30 @@
  */
 module.exports = function (RED) {
   'use strict'
-  // SOURCE-MAP-REQUIRED
-  let mbBasics = require('./modbus-basics')
-  let internalDebugLog = require('debug')('contribModbus:queue')
+  let internalDebugLog = require('debug')('node_red_contrib_modbus')
 
   function ModbusQueueInfo (config) {
     RED.nodes.createNode(this, config)
 
     this.name = config.name
-    this.topic = config.topic
     this.unitid = parseInt(config.unitid)
     this.lowLowLevel = parseInt(config.lowLowLevel)
     this.lowLevel = parseInt(config.lowLevel)
     this.highLevel = parseInt(config.highLevel)
     this.highHighLevel = parseInt(config.highHighLevel)
     this.errorOnHighLevel = config.errorOnHighLevel
-    this.queueReadIntervalTime = config.queueReadIntervalTime || 1000
 
     let node = this
 
     let modbusClient = RED.nodes.getNode(config.server)
-    modbusClient.registerForModbus(node)
+
     node.queueReadInterval = null
 
-    mbBasics.setNodeStatusTo('waiting', node)
+    if (RED.settings.verbose) {
+      internalDebugLog.enabled = true
+    }
+
+    setNodeStatusTo('waiting')
 
     node.resetStates = function () {
       node.lowLowLevelReached = true
@@ -63,53 +63,46 @@ module.exports = function (RED) {
 
         if (!node.lowLevelReached && items > node.lowLowLevel && items < node.lowLevel) {
           node.lowLevelReached = true
-          let msg = {
+          internalDebugLog({
             payload: Date.now(),
-            topic: node.topic,
             state: 'low level reached',
             unitid: unit,
-            modbusClientName: modbusClient.name,
             items: items
-          }
-
-          node.send(msg)
+          })
         }
 
         if (!node.highLevelReached && items > node.lowLevel && items > node.highLevel) {
           node.highLevelReached = true
-          let msg = {
-            payload: Date.now(),
-            topic: node.topic,
-            state: 'high level reached',
-            unitid: unit,
-            modbusClientName: modbusClient.name,
-            highLevel: node.highLevel,
-            items: items
-          }
 
           if (node.errorOnHighLevel) {
-            node.error(new Error('Queue High Level Reached'), msg)
+            node.error('Queue High Level Reached', {
+              payload: Date.now(),
+              state: 'high level reached',
+              unitid: unit,
+              highLevel: node.highLevel,
+              items: items
+            })
           } else {
-            node.warn(msg)
+            node.warn({
+              payload: Date.now(),
+              state: 'high level reached',
+              unitid: unit,
+              highLevel: node.highLevel,
+              items: items
+            })
           }
-
-          node.send(msg)
         }
 
         if (!node.highHighLevelReached && items > node.highLevel && items > node.highHighLevel) {
           node.highHighLevelReached = true
-          let msg = {
+          node.error('Queue High High Level Reached', {
             payload: Date.now(),
-            topic: node.topic,
             state: 'high high level reached',
             unitid: unit,
-            modbusClientName: modbusClient.name,
             highLevel: node.highLevel,
             highHighLevel: node.highHighLevel,
             items: items
-          }
-          node.error(new Error('Queue High High Level Reached'), msg)
-          node.send(msg)
+          })
         }
 
         let fillColor = 'blue'
@@ -135,7 +128,7 @@ module.exports = function (RED) {
           text: 'active unit ' + unit + ' queue items: ' + items
         })
       } else {
-        mbBasics.setNodeStatusTo('active unit ' + unit + ' without queue', node)
+        setNodeStatusTo('active unit ' + unit + ' without queue')
       }
     }
 
@@ -155,7 +148,7 @@ module.exports = function (RED) {
     modbusClient.on('mbqueue', node.onModbusQueue)
     modbusClient.on('mbactive', node.onModbusActive)
 
-    node.queueReadInterval = setInterval(node.readFromQueue, node.queueReadIntervalTime)
+    node.queueReadInterval = setInterval(node.readFromQueue, 1000)
 
     node.on('input', function (msg) {
       msg.queueEnabled = modbusClient.bufferCommands
@@ -167,43 +160,37 @@ module.exports = function (RED) {
         msg.queues = modbusClient.bufferCommandList
       }
 
-      msg.queueOptions = {
-        date: Date.now(),
-        state: 'queue request',
-        modbusClientName: modbusClient.name,
-        lowlowLevel: node.lowlowLevel,
-        lowLevel: node.lowLevel,
-        highLevel: node.highLevel,
-        highHighLevel: node.highHighLevel
-      }
-
-      if (msg && msg.resetQueue && modbusClient.bufferCommands) {
+      if (msg &&
+        msg.resetQueue &&
+        modbusClient.bufferCommands) {
         modbusClient.initQueue()
-        if (RED.settings.verbose) {
-          let infoText = 'Init Queue By External Node'
-          modbusClient.warn(infoText)
-          internalDebugLog(infoText)
-        }
+        modbusClient.warn('Init Queue By External Node')
         node.resetStates()
         node.status({
           fill: 'blue',
           shape: 'ring',
           text: 'active empty unit queue'
         })
-        msg.queueOptions.state = 'queue reset done'
       }
 
       node.send(msg)
     })
 
-    node.on('close', function (done) {
-      mbBasics.setNodeStatusTo('closed', node)
+    node.on('close', function () {
+      setNodeStatusTo('closed')
       if (node.queueReadInterval) {
         clearInterval(node.queueReadInterval)
       }
       node.queueReadInterval = null
-      modbusClient.deregisterForModbus(node, done)
     })
+
+    function setNodeStatusTo (statusValue) {
+      node.status({
+        fill: 'green',
+        shape: 'ring',
+        text: statusValue
+      })
+    }
   }
 
   RED.nodes.registerType('modbus-queue-info', ModbusQueueInfo)

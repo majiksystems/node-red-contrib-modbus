@@ -2,7 +2,7 @@
  * Original Work Copyright 2014 IBM Corp.
  * node-red
  *
- * Copyright (c) 2016,2017,2018 Klaus Landsdorf (http://bianco-royal.de/)
+ * Copyright (c) 2016,2017, Klaus Landsdorf (http://bianco-royal.de/)
  * All rights reserved.
  * node-red-contrib-modbus - The BSD 3-Clause License
  *
@@ -10,113 +10,40 @@
 
 'use strict'
 
-var injectNode = require('node-red/nodes/core/core/20-inject.js')
 var serverNode = require('../../src/modbus-server.js')
-
-var helper = require('node-red-node-test-helper')
-helper.init(require.resolve('node-red'))
+var helper = require('../helper.js')
 
 describe('Server node Testing', function () {
   before(function (done) {
-    helper.startServer(function () {
-      done()
-    })
+    helper.startServer(done)
   })
 
-  afterEach(function (done) {
-    helper.unload().then(function () {
-      done()
-    }).catch(function () {
-      done()
-    })
-  })
-
-  after(function (done) {
-    helper.stopServer(function () {
-      done()
-    })
+  afterEach(function () {
+    helper.unload()
   })
 
   describe('Node', function () {
     it('simple Node should be loaded', function (done) {
-      helper.load(serverNode, [
-        {
-          'id': '178284ea.5055ab',
-          'type': 'modbus-server',
-          'name': 'modbusServer',
-          'logEnabled': false,
-          'hostname': '',
-          'serverPort': '5502',
-          'responseDelay': '50',
-          'delayUnit': 'ms',
-          'coilsBufferSize': 1024,
-          'holdingBufferSize': 1024,
-          'inputBufferSize': 1024,
-          'discreteBufferSize': 1024,
-          'showErrors': false,
-          'wires': [
-            [],
-            [],
-            [],
-            []
-          ]
-        }
-      ], function () {
-        var modbusServer = helper.getNode('178284ea.5055ab')
+      helper.load(serverNode, [{
+        id: '8cd6ca70.0dd188',
+        type: 'modbus-server',
+        z: '5dcb7dec.f36a24',
+        name: 'modbusServer',
+        logEnabled: false,
+        serverPort: 11502,
+        responseDelay: 100,
+        delayUnit: 'ms',
+        coilsBufferSize: 1024,
+        holdingBufferSize: 1024,
+        inputBufferSize: 1024,
+        x: 500,
+        y: 300,
+        wires: []
+      }], function () {
+        var modbusServer = helper.getNode('8cd6ca70.0dd188')
         modbusServer.should.have.property('name', 'modbusServer')
 
         done()
-      }, function () {
-        helper.log('function callback')
-      })
-    })
-
-    it('should send data on input', function (done) {
-      helper.load([injectNode, serverNode], [
-        {
-          'id': '178284ea.5055ab',
-          'type': 'modbus-server',
-          'name': 'modbusServer',
-          'logEnabled': false,
-          'hostname': '',
-          'serverPort': '5502',
-          'responseDelay': '50',
-          'delayUnit': 'ms',
-          'coilsBufferSize': 1024,
-          'holdingBufferSize': 1024,
-          'inputBufferSize': 1024,
-          'discreteBufferSize': 1024,
-          'showErrors': false,
-          'wires': [
-            ['h1'],
-            [],
-            [],
-            []
-          ]
-        },
-        {id: 'h1', type: 'helper'},
-        {
-          'id': 'a75e0ccf.e16628',
-          'type': 'inject',
-          'name': '',
-          'topic': '',
-          'payload': '',
-          'payloadType': 'date',
-          'repeat': '2',
-          'crontab': '',
-          'once': true,
-          'onceDelay': 0.1,
-          'wires': [
-            [
-              '178284ea.5055ab'
-            ]
-          ]
-        }
-      ], function () {
-        let h1 = helper.getNode('h1')
-        h1.on('input', function (msg) {
-          done()
-        })
       }, function () {
         helper.log('function callback')
       })

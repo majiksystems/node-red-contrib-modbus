@@ -9,32 +9,27 @@
 
 'use strict'
 
-const gulp = require('gulp')
-const htmlmin = require('gulp-htmlmin')
+var gulp = require('gulp')
+var pump = require('pump')
+var htmlmin = require('gulp-htmlmin')
 const jsdoc = require('gulp-jsdoc3')
 const clean = require('gulp-clean')
-const uglify = require('gulp-uglify')
-const babel = require('gulp-babel')
-const sequence = require('gulp-sequence')
-const sourcemaps = require('gulp-sourcemaps')
-const pump = require('pump')
-const replace = require('gulp-replace')
 
 gulp.task('default', function () {
   // place code for your default task here
 })
 
-gulp.task('docs', sequence('doc', 'docIcons', 'docImages'))
-gulp.task('build', sequence('clean', 'web', 'nodejs', 'locale', 'code', 'icons'))
-gulp.task('publish', sequence('build', 'docs', 'maps'))
+gulp.task('docs', ['doc', 'docIcons', 'docImages', 'docExamples'])
+gulp.task('build', ['web', 'nodejs'])
+gulp.task('publish', ['build', 'icons', 'images', 'examples', 'locale', 'docs'])
 
 gulp.task('clean', function () {
-  return gulp.src(['modbus', 'docs/gen', 'maps', 'code', 'coverage'])
-    .pipe(clean({ force: true }))
+  return gulp.src('modbus')
+    .pipe(clean({force: true}))
 })
 
 gulp.task('doc', function (cb) {
-  gulp.src(['README.md', 'src/**/*.js'], { read: false })
+  gulp.src(['README.md', 'src/**/*.js'], {read: false})
     .pipe(jsdoc(cb))
 })
 
@@ -46,16 +41,24 @@ gulp.task('docImages', function () {
   return gulp.src('images/**/*').pipe(gulp.dest('docs/gen/images'))
 })
 
+gulp.task('docExamples', function () {
+  return gulp.src('examples/**/*').pipe(gulp.dest('docs/gen/examples'))
+})
+
 gulp.task('icons', function () {
   return gulp.src('src/icons/**/*').pipe(gulp.dest('modbus/icons'))
 })
 
-gulp.task('locale', function () {
-  return gulp.src('src/locales/**/*').pipe(gulp.dest('modbus/locales'))
+gulp.task('images', function () {
+  return gulp.src('images/**/*').pipe(gulp.dest('modbus/images'))
 })
 
-gulp.task('maps', function () {
-  return gulp.src('maps/**/*').pipe(gulp.dest('modbus/maps'))
+gulp.task('examples', function () {
+  return gulp.src('examples/**/*').pipe(gulp.dest('modbus/examples'))
+})
+
+gulp.task('locale', function () {
+  return gulp.src('src/locales/**/*').pipe(gulp.dest('modbus/locales'))
 })
 
 gulp.task('web', function () {
@@ -76,26 +79,10 @@ gulp.task('web', function () {
 })
 
 gulp.task('nodejs', function (cb) {
-  let anchor = '// SOURCE-MAP-REQUIRED'
-
-  pump([gulp.src('src/**/*.js')
-    .pipe(sourcemaps.init({ loadMaps: true }))
-    .pipe(replace(anchor, 'require(\'source-map-support\').install()'))
-    .pipe(babel({ presets: ['@babel/env'] }))
-    .pipe(uglify())
-    .pipe(sourcemaps.write('maps')), gulp.dest('modbus')],
-  cb
+  pump([
+    gulp.src('src/**/*.js'),
+    gulp.dest('modbus')
+  ],
+    cb
   )
-})
-
-gulp.task('nodejsclearly', function (cb) {
-  gulp.src('src/**/*.js')
-    .pipe(babel({ presets: ['@babel/env'] }))
-    .pipe(gulp.dest('code'))
-})
-
-gulp.task('code', function () {
-  gulp.src('src/**/*.js')
-    .pipe(babel({ presets: ['@babel/env'] }))
-    .pipe(gulp.dest('code'))
 })

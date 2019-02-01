@@ -1,35 +1,32 @@
 <!--
- Copyright (c) 2016,2017,2018 Klaus Landsdorf (http://bianco-royal.de/)
+ Copyright (c) 2016,2017, Klaus Landsdorf (http://bianco-royal.de/)
  All rights reserved.
  node-red-contrib-modbus - The BSD 3-Clause License
 
  @author <a href="mailto:klaus.landsdorf@bianco-royal.de">Klaus Landsdorf</a> (Bianco Royal)
 -->
 <script type="text/javascript">
-  RED.nodes.registerType('modbus-queue-info', {
-    category: 'modbus',
-    color: '#E9967A',
-    defaults: {
-      name: {value: ''},
-      topic: {value: ''},
-      unitid: {value: ''},
-      queueReadIntervalTime: {value: 1000, validate: RED.validators.number()},
-      lowLowLevel: {value: 25, validate: RED.validators.number()},
-      lowLevel: {value: 75, validate: RED.validators.number()},
-      highLevel: {value: 150, validate: RED.validators.number()},
-      highHighLevel: {value: 300, validate: RED.validators.number()},
-      server: {type: 'modbus-client', required: true},
-      errorOnHighLevel: {value: false}
-    },
-    inputs: 1,
-    outputs: 1,
-    align: "right",
-    icon: 'modbus.png',
-    paletteLabel: 'Modbus-Queue-Info',
-    label: function () {
-      return this.name || 'Modbus Queue Info'
-    }
-  })
+    RED.nodes.registerType('modbus-queue-info', {
+        category: 'modbus',
+        color: '#E9967A',
+        defaults: {
+            name: {value: ""},
+            unitid: {value: ""},
+            lowLowLevel: {value: 25, validate: RED.validators.number()},
+            lowLevel: {value: 75, validate: RED.validators.number()},
+            highLevel: {value: 150, validate: RED.validators.number()},
+            highHighLevel: {value: 300, validate: RED.validators.number()},
+            server: {type: "modbus-client", required:true},
+            errorOnHighLevel: {value: false}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "modbus.png",
+        paletteLabel: "Modbus-Queue-Info",
+        label: function () {
+            return this.name || "Modbus Queue Info"
+        }
+    })
 </script>
 
 
@@ -39,16 +36,8 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-topic"><i class="icon-tag"></i> <span data-i18n="node-red:common.label.topic"></span></label>
-        <input type="text" id="node-input-topic" placeholder="Topic">
-    </div>
-    <div class="form-row">
         <label for="node-input-unitid"><i class="icon-bookmark"></i> <span data-i18n="modbus-contrib.label.unitId"></span></label>
         <input type="text" id="node-input-unitid" placeholder="1">
-    </div>
-    <div class="form-row">
-        <label for="node-input-queueReadIntervalTime"><i class="icon-clock"></i> <span data-i18n="modbus-contrib.label.queueReadIntervalTime"></span></label>
-        <input type="text" id="node-input-queueReadIntervalTime" placeholder="1000" style="width:140px;"> msec.
     </div>
     <hr>
     <div class="form-row">
@@ -78,7 +67,6 @@
         data-i18n="modbus-contrib.label.errorOnHighLevel"></span></label>
         <input type="checkbox" id="node-input-errorOnHighLevel" style="max-width:30px">
     </div>
-
 </script>
 
 
@@ -115,5 +103,4 @@
      and with the high high an error for work with the catch node</p>
 
      <p>Output: all queue information - use complete msg with debug</p>
-
 </script>

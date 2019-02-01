@@ -2,7 +2,7 @@
  * Original Work Copyright 2014 IBM Corp.
  * node-red
  *
- * Copyright (c) 2016,2017,2018 Klaus Landsdorf (http://bianco-royal.de/)
+ * Copyright (c) 2016,2017, Klaus Landsdorf (http://bianco-royal.de/)
  * All rights reserved.
  * node-red-contrib-modbus - The BSD 3-Clause License
  *
@@ -13,124 +13,51 @@
 var injectNode = require('node-red/nodes/core/core/20-inject.js')
 var clientNode = require('../../src/modbus-client.js')
 var serverNode = require('../../src/modbus-server.js')
-var nodeUnderTest = require('../../src/modbus-write.js')
-
-var helper = require('node-red-node-test-helper')
-helper.init(require.resolve('node-red'))
-
-var testSimpleWriteParametersNodes = [injectNode, clientNode, serverNode, nodeUnderTest]
-
-var testSimpleWriteParametersFlow = [{
-  'id': '445454e4.968564',
-  'type': 'modbus-server',
-  'name': '',
-  'logEnabled': true,
-  'hostname': '127.0.0.1',
-  'serverPort': '7502',
-  'responseDelay': 100,
-  'delayUnit': 'ms',
-  'coilsBufferSize': 10000,
-  'holdingBufferSize': 10000,
-  'inputBufferSize': 10000,
-  'discreteBufferSize': 10000,
-  'showErrors': false,
-  'wires': [
-    [],
-    [],
-    []
-  ]
-},
-{
-  'id': '1ed908da.427ecf',
-  'type': 'modbus-write',
-  'name': 'Write Reset FC5',
-  'showStatusActivities': true,
-  'showErrors': false,
-  'unitid': '',
-  'dataType': 'Coil',
-  'adr': '64',
-  'quantity': '1',
-  'server': 'aef203cf.a23dc',
-  'wires': [
-    [
-      'h1'
-    ],
-    [
-    ]
-  ]
-},
-{id: 'h1', type: 'helper'},
-{
-  'id': 'aef203cf.a23dc',
-  'type': 'modbus-client',
-  'name': 'Modbus Server',
-  'clienttype': 'tcp',
-  'bufferCommands': true,
-  'stateLogEnabled': false,
-  'tcpHost': '127.0.0.1',
-  'tcpPort': '7502',
-  'tcpType': 'DEFAULT',
-  'serialPort': '/dev/ttyUSB',
-  'serialType': 'RTU-BUFFERD',
-  'serialBaudrate': '9600',
-  'serialDatabits': '8',
-  'serialStopbits': '1',
-  'serialParity': 'none',
-  'serialConnectionDelay': '100',
-  'unit_id': '1',
-  'commandDelay': '1',
-  'clientTimeout': '100',
-  'reconnectTimeout': '250'
-}
-]
+var writeNode = require('../../src/modbus-write.js')
+var helper = require('../helper.js')
 
 describe('Write node Testing', function () {
   before(function (done) {
-    helper.startServer(function () {
-      done()
-    })
+    helper.startServer(done)
   })
 
-  afterEach(function (done) {
-    helper.unload().then(function () {
-      done()
-    }).catch(function () {
-      done()
-    })
-  })
-
-  after(function (done) {
-    helper.stopServer(function () {
-      done()
-    })
+  afterEach(function () {
+    helper.unload()
   })
 
   describe('Node', function () {
     it('simple Node should be loaded', function (done) {
-      helper.load([injectNode, clientNode, serverNode, nodeUnderTest], [{
+      helper.load([injectNode, clientNode, serverNode, writeNode], [{
         id: 'e54529b9.952ea8',
         type: 'modbus-server',
+        z: '5dcb7dec.f36a24',
         name: 'modbusServer',
         logEnabled: false,
-        serverPort: 8502,
+        serverPort: 11502,
         responseDelay: 100,
         delayUnit: 'ms',
         coilsBufferSize: 1024,
         holdingBufferSize: 1024,
         inputBufferSize: 1024,
+        x: 260,
+        y: 200,
         wires: []
       }, {
         id: '8ad2951c.2df708',
         type: 'modbus-write',
+        z: '5dcb7dec.f36a24',
         name: 'modbusWrite',
         dataType: 'HoldingRegister',
         adr: '0',
         quantity: '1',
         server: 'dc764ad7.580238',
+        x: 400,
+        y: 260,
         wires: [[], []]
       }, {
         id: '67dded7e.025904',
         type: 'inject',
+        z: '5dcb7dec.f36a24',
         name: 'injectTrue',
         topic: '',
         payload: true,
@@ -138,6 +65,8 @@ describe('Write node Testing', function () {
         repeat: '',
         crontab: '',
         once: false,
+        x: 250,
+        y: 260,
         wires: [['8ad2951c.2df708']]
       }, {
         id: 'dc764ad7.580238',
@@ -146,10 +75,10 @@ describe('Write node Testing', function () {
         name: 'modbusClient',
         clienttype: 'tcp',
         tcpHost: '127.0.0.1',
-        tcpPort: 8502,
+        tcpPort: 11502,
         unit_id: 1,
-        clientTimeout: 100,
-        reconnectTimeout: 200
+        clientTimeout: 5000,
+        reconnectTimeout: 5000
       }], function () {
         var inject = helper.getNode('67dded7e.025904')
         inject.should.have.property('name', 'injectTrue')
@@ -164,167 +93,6 @@ describe('Write node Testing', function () {
         modbusWrite.should.have.property('name', 'modbusWrite')
 
         done()
-      }, function () {
-        helper.log('function callback')
-      })
-    })
-
-    it('simple flow with boolean injects and write should be loaded', function (done) {
-      helper.load([injectNode, clientNode, serverNode, nodeUnderTest], [{
-        'id': '445454e4.968564',
-        'type': 'modbus-server',
-        'name': '',
-        'logEnabled': true,
-        'hostname': '127.0.0.1',
-        'serverPort': '7502',
-        'responseDelay': 100,
-        'delayUnit': 'ms',
-        'coilsBufferSize': 10000,
-        'holdingBufferSize': 10000,
-        'inputBufferSize': 10000,
-        'discreteBufferSize': 10000,
-        'showErrors': false,
-        'wires': [
-          [],
-          [],
-          []
-        ]
-      },
-      {
-        'id': '1ed908da.427ecf',
-        'type': 'modbus-write',
-        'name': 'Write Reset FC5',
-        'showStatusActivities': true,
-        'showErrors': false,
-        'unitid': '',
-        'dataType': 'Coil',
-        'adr': '64',
-        'quantity': '1',
-        'server': 'aef203cf.a23dc',
-        'wires': [
-          [
-            'h1'
-          ],
-          [
-          ]
-        ]
-      },
-      {id: 'h1', type: 'helper'},
-      {
-        'id': '16b7697e.2baa47',
-        'type': 'inject',
-        'name': '',
-        'topic': '',
-        'payload': 'true',
-        'payloadType': 'bool',
-        'repeat': '2',
-        'crontab': '',
-        'once': false,
-        'wires': [
-          [
-            '1ed908da.427ecf'
-          ]
-        ]
-      },
-      {
-        'id': '5da6464f.441aa',
-        'type': 'inject',
-        'name': '',
-        'topic': '',
-        'payload': 'false',
-        'payloadType': 'bool',
-        'repeat': '2',
-        'crontab': '',
-        'once': true,
-        'onceDelay': 0.1,
-        'wires': [
-          [
-            '1ed908da.427ecf'
-          ]
-        ]
-      },
-      {
-        'id': 'aef203cf.a23dc',
-        'type': 'modbus-client',
-        'name': 'Modbus Server',
-        'clienttype': 'tcp',
-        'bufferCommands': true,
-        'stateLogEnabled': false,
-        'tcpHost': '127.0.0.1',
-        'tcpPort': '7502',
-        'tcpType': 'DEFAULT',
-        'serialPort': '/dev/ttyUSB',
-        'serialType': 'RTU-BUFFERD',
-        'serialBaudrate': '9600',
-        'serialDatabits': '8',
-        'serialStopbits': '1',
-        'serialParity': 'none',
-        'serialConnectionDelay': '100',
-        'unit_id': '1',
-        'commandDelay': '1',
-        'clientTimeout': '100',
-        'reconnectTimeout': '250'
-      }
-      ], function () {
-        let modbusWrite = helper.getNode('1ed908da.427ecf')
-        let h1 = helper.getNode('h1')
-        h1.on('input', function (msg) {
-          if (modbusWrite.bufferMessageList.size === 0) {
-            done()
-          }
-        })
-      }, function () {
-        helper.log('function callback')
-      })
-    })
-
-    it('simple flow with string false http inject and write should be loaded', function (done) {
-      helper.load(testSimpleWriteParametersNodes, testSimpleWriteParametersFlow, function () {
-        let modbusWrite = helper.getNode('1ed908da.427ecf')
-        setTimeout(function () {
-          modbusWrite.receive({ payload: { 'value': 'false', 'fc': 5, 'unitid': 1, 'address': 0, 'quantity': 1 } })
-        }, 800)
-        let h1 = helper.getNode('h1')
-        h1.on('input', function (msg) {
-          if (modbusWrite.bufferMessageList.size === 0) {
-            done()
-          }
-        })
-      }, function () {
-        helper.log('function callback')
-      })
-    })
-
-    it('simple flow with string true http inject and write should be loaded', function (done) {
-      helper.load(testSimpleWriteParametersNodes, testSimpleWriteParametersFlow, function () {
-        let modbusWrite = helper.getNode('1ed908da.427ecf')
-        setTimeout(function () {
-          modbusWrite.receive({ payload: { 'value': 'true', 'fc': 5, 'unitid': 1, 'address': 0, 'quantity': 1 } })
-        }, 800)
-        let h1 = helper.getNode('h1')
-        h1.on('input', function (msg) {
-          if (modbusWrite.bufferMessageList.size === 0) {
-            done()
-          }
-        })
-      }, function () {
-        helper.log('function callback')
-      })
-    })
-
-
-    it('simple flow with string with array of values input from http should be parsed and written', function (done) {
-      helper.load(testSimpleWriteParametersNodes, testSimpleWriteParametersFlow, function () {
-        let h1 = helper.getNode('h1')
-        h1.on('input', function (msg) {
-          if (modbusWrite.bufferMessageList.size === 0) {
-            done()
-          }
-        })
-        let modbusWrite = helper.getNode('1ed908da.427ecf')
-        setTimeout(function () {
-          modbusWrite.receive({payload: '{ "value": [0,1,0,1], "fc": 5, "unitid": 1,"address": 0, "quantity": 4 }'})
-        }, 800)
       }, function () {
         helper.log('function callback')
       })

@@ -1,5 +1,5 @@
 <!--
- Copyright (c) 2017,2018 Klaus Landsdorf (http://bianco-royal.de/)
+ Copyright (c) 2017, Klaus Landsdorf (http://bianco-royal.de/)
  All rights reserved.
  node-red-contrib-modbus - The BSD 3-Clause License
 
@@ -10,20 +10,19 @@
     category: 'modbus',
     color: '#E9967A',
     defaults: {
-      name: {value: ''},
+      name: {value: ""},
       maxReconnectsPerMinute: {value: 4},
       emptyQueue: {value: false},
       showStatusActivities: {value: false},
       showErrors: {value: false},
-      server: {type: 'modbus-client', required: true}
+      server: {type: "modbus-client", required: true}
     },
     inputs: 1,
     outputs: 0,
-    align: "left",
-    icon: 'modbus.png',
-    paletteLabel: 'Modbus-Flex-Connector',
+    icon: "modbus.png",
+    paletteLabel: "Modbus-Flex-Connector",
     label: function () {
-      return this.name || 'Modbus Flex Connector'
+      return this.name || "Modbus Flex Connector"
     }
   })
 </script>
@@ -60,7 +59,6 @@
         data-i18n="modbus-contrib.label.showErrors"></span></label>
         <input type="checkbox" id="node-input-showErrors" style="max-width:30px">
     </div>
-
 </script>
 
 
@@ -133,5 +131,4 @@
         'unitId': 2 }
         return msg
      </code>
-
 </script>
