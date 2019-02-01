@@ -2,11 +2,8 @@
   "modbus-contrib": {
     "label": {
       "type": "Type",
-      "queueCommands": "Queue commands",
-      "stateLogEnabled": "Log states changes",
       "host": "Host",
       "port": "Port",
-      "tcpType": "TCP Type",
       "serialport": "Serial port",
       "serialType": "Serial type",
       "serialEndian": "Endian type",
@@ -14,11 +11,9 @@
       "dataBits": "Data Bits",
       "stopBits": "Stop Bits",
       "parity": "Parity",
-      "serialconnectiondelay": "Connection delay (ms)",
       "unitId": "Unit-Id",
-      "commandDelay": "Queue delay (ms)",
-      "timeout": "Timeout (ms)",
-      "reconnectTimeout": "Reconnect timeout (ms)"
+      "timeout": "Timeout",
+      "reconnectTimeout": "Reconnect timeout"
     }
   }
 }

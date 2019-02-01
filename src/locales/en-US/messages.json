@@ -4,8 +4,7 @@
       "label": {
         "type": "Type",
         "server": "Server",
-        "timeout": "Timeout",
-        "name": "Name"
+        "timeout": "Timeout"
       },
       "response": {
       },
